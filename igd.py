@@ -5,7 +5,8 @@ import io
 import itertools
 import socket
 import traceback
-import urllib
+import urllib.request
+import urllib.parse
 import wsgiref.headers
 
 from xml.etree import ElementTree

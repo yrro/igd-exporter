@@ -3,7 +3,8 @@ import cgi
 import ipaddress
 import socket
 import urllib
-import wsgiref
+import wsgiref.simple_server
+import wsgiref.util
 
 import prometheus_client
 
