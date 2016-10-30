@@ -30,7 +30,7 @@ def main():
             super().server_bind()
 
     server = wsgiref.simple_server.make_server(str(args.bind_address), args.bind_port, wsgi_app, IPv46Server)
-    server.serve_forever()
+    server.serve_forever(poll_interval=600)
 
 def wsgi_app(environ, start_response):
     '''
