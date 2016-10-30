@@ -6,6 +6,7 @@ import itertools
 import socket
 import traceback
 import urllib
+import wsgiref.headers
 
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element as E, SubElement as sE, ElementTree as ET, QName
@@ -94,27 +95,26 @@ def search_result(buf, addr):
     '''
     try:
         headers, buf = search_parse(buf)
+        return headers['Location']
     except:
         raise Exception('Malformed search result from {}'.format(addr))
-    else:
-        return headers[b'Location'].decode('latin1')
 
 def search_parse(buf):
     '''
-    Parse a search response, returning a dict of headers and the body.
+    Parse a search response, returning a mapping of headers and the body.
     '''
     status, sep, buf = buf.partition(b'\r\n')
     version, status, reason = status.split()
     if status != b'200':
         raise Exception('Unknown status {}'.format(status))
-    headers = {}
+    headers = wsgiref.headers.Headers()
     while True:
         header, sep, buf = buf.partition(b'\r\n')
         if header == b'':
             break
         else:
             name, sep, value = header.partition(b':')
-            headers[name] = value.lstrip()
+            headers.add_header(name.decode('latin1'), value.lstrip().decode('latin1'))
 
     return headers, buf
 
