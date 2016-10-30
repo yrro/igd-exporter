@@ -1,4 +1,5 @@
 import argparse
+import cgi
 import ipaddress
 import socket
 import urllib
@@ -39,16 +40,25 @@ def wsgi_app(environ, start_response):
 
 def front(environ, start_response):
     start_response('200 OK', [('Content-Type', 'text/html')])
+
+    if environ['REQUEST_METHOD'] == 'POST':
+        form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ, strict_parsing=1, encoding='latin1')
+        if form.getfirst('search') == '1':
+            targets[:] = igd.search(5)
+
     return [
         b'<html>'
             b'<head><title>WSG exporter</title></head>'
             b'<body>'
-                b'<h1>WSG Exporter</h1>'
-                b'<p><a href="/probe?target=http%3A%2F%2F192.0.2.1%2FRootDevice.xml">Probe http://192.0.2.1/RootDevice.xml</a>'
+                b'<h1>IGD Exporter</h1>',
+                *[b'<p><a href="/probe?target=%s">Probe %s</a>' % (urllib.parse.quote_plus(target).encode('latin1'), target.encode('latin1')) for target in targets],
+                b'<form method="post"><p><input type="hidden" name="search" value="1"><button type="submit">Search</button> for devices on local network (5 second timeout)</input></form>'
                 b'<p><a href="/metrics">Metrics</a>'
             b'</body>'
         b'</html>'
     ]
+
+targets = ['http://192.0.2.1/scpd.xml']
 
 def probe(environ, start_response):
     qs = urllib.parse.parse_qs(environ['QUERY_STRING'])
