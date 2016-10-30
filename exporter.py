@@ -10,6 +10,9 @@ import prometheus_client
 import igd
 
 def main():
+    '''
+    You are here.
+    '''
     parser = argparse.ArgumentParser()
     parser.add_argument('--bind-address', type=ipaddress.ip_address, default='::', help='IPv6 or IPv4 address to listen on')
     parser.add_argument('--bind-port', type=int, default=9196, help='Port to listen on')
@@ -29,6 +32,9 @@ def main():
     server.serve_forever()
 
 def wsgi_app(environ, start_response):
+    '''
+    Base WSGI application that routes requests to other applications.
+    '''
     name = wsgiref.util.shift_path_info(environ)
     if name == '':
         return front(environ, start_response)
@@ -39,6 +45,10 @@ def wsgi_app(environ, start_response):
     return not_found(environ, start_response)
 
 def front(environ, start_response):
+    '''
+    Front page, containing links to the expoter's own metrics, as well as links
+    to probe discovered devices.
+    '''
     start_response('200 OK', [('Content-Type', 'text/html')])
 
     if environ['REQUEST_METHOD'] == 'POST':
@@ -58,9 +68,13 @@ def front(environ, start_response):
         b'</html>'
     ]
 
+# Discovered devices are kept in this list.
 targets = ['http://192.0.2.1/scpd.xml']
 
 def probe(environ, start_response):
+    '''
+    Performs a probe using the given root device URL.
+    '''
     qs = urllib.parse.parse_qs(environ['QUERY_STRING'])
     body = igd.probe(qs['target'][0])
     start_response('200 OK', [('Content-Type', 'text/plain; charset=utf-8; version=0.0.4')])
@@ -69,6 +83,9 @@ def probe(environ, start_response):
 prometheus_app = prometheus_client.make_wsgi_app()
 
 def not_found(environ, start_response):
+    '''
+    How did we get here?
+    '''
     start_response('404 Not Found', [('Content-Type', 'text/plain')])
     return [b'Not Found\r\n']
 

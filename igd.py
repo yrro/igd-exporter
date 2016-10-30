@@ -22,9 +22,24 @@ ElementTree.register_namespace('s', ns['s'])
 ElementTree.register_namespace('u', ns['i'])
 
 class Device(collections.namedtuple('Device', ['udn', 'url'])):
+    '''
+    Collects interesting attributes about a device.
+
+    udn - Unique Device Name, should uniquely identify the WANDevice
+
+    url - the Control URL for the WANCommonInterfaceConfig service attached to
+          the WANDevice
+    '''
     pass
 
 def search(timeout):
+    '''
+    Search for devices implementing WANCommonInterfaceConfig on the network.
+
+    Search ends the specified number of seconds after the last result (if any) was received.
+
+    Returns an iterator of root device URLs.
+    '''
     with contextlib.ExitStack() as stack:
         sockets = []
         sockets.append(stack.enter_context(socket.socket(socket.AF_INET6, socket.SOCK_DGRAM, socket.IPPROTO_UDP)))
@@ -39,7 +54,13 @@ def search(timeout):
                 return itertools.chain(*ex.map(lambda s: search_socket(s, timeout, ns['i']), sockets))
 
 def search_socket(sock, timeout, target='upnp:rootdevice'):
+    '''
+    Transmit an SSDP search request to the local network.
 
+    Filters results as specified by target.
+
+    Returns a list of root device URLs.
+    '''
     addr = 'ff02::c' if sock.family == socket.AF_INET6 else '239.255.255.250'
     host = '[{}]'.format(addr) if sock.family == socket.AF_INET6 else addr
     msg = b'M-SEARCH * HTTP/1.1\r\n' \
@@ -68,6 +89,9 @@ def search_socket(sock, timeout, target='upnp:rootdevice'):
     return result
 
 def search_result(buf, addr):
+    '''
+    Retrieve root device URL from search response
+    '''
     try:
         headers, buf = search_parse(buf)
     except:
@@ -76,6 +100,9 @@ def search_result(buf, addr):
         return headers[b'Location'].decode('latin1')
 
 def search_parse(buf):
+    '''
+    Parse a search response, returning a dict of headers and the body.
+    '''
     status, sep, buf = buf.partition(b'\r\n')
     version, status, reason = status.split()
     if status != b'200':
@@ -92,6 +119,14 @@ def search_parse(buf):
     return headers, buf
 
 def probe(target_url):
+    '''
+    Retrieve interesting metrics from the services found at the given root
+    device URL.
+
+    Metrics are labelled with the service's UDN.
+
+    Returns a list of byte strings in the Prometheus text format.
+    '''
     device = probe_device(target_url)
 
     result = []
@@ -107,6 +142,10 @@ def probe(target_url):
     return result
 
 def probe_device(target_url):
+    '''
+    Determine UDN and service control URL for the WanCommonInterfaceConfig
+    service described by SCPD XML found at the given root device URL.
+    '''
     with urllib.request.urlopen(target_url) as scpd:
         st = ElementTree.parse(scpd)
 
@@ -117,6 +156,12 @@ def probe_device(target_url):
     return Device(device.findtext('d:UDN', namespaces=ns), urllib.parse.urljoin(url_base, url_path))
 
 def probe_metric(service_url, metric):
+    '''
+    Query the service at the given URL for the given metric value.
+
+    Assumptions are made about the name of the method and output parameters
+    which are only valid for the WanCommonInterfaceConfig service.
+    '''
     envelope = E(QName(ns['s'], 'Envelope'), {QName(ns['s'], 'encodingStyle'): 'http://schemas.xmlsoap.org/soap/encoding/'})
     body = sE(envelope, QName(ns['s'], 'Body'))
     method = sE(body, QName(ns['i'], 'Get{}'.format(metric)))
