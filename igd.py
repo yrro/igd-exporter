@@ -25,8 +25,8 @@ def probe(target_url):
     device = probe_device(target_url)
 
     result = []
-    with concurrent.futures.ThreadPoolExecutor(4) as e:
-        for metric, value in e.map(lambda metric: (metric, probe_metric(device.url, metric)), ['TotalBytesReceived', 'TotalBytesSent', 'TotalPacketsReceived', 'TotalPacketsSent']):
+    with concurrent.futures.ThreadPoolExecutor(4) as ex:
+        for metric, value in ex.map(lambda metric: (metric, probe_metric(device.url, metric)), ['TotalBytesReceived', 'TotalBytesSent', 'TotalPacketsReceived', 'TotalPacketsSent']):
             if value < 0:
                 # WANCommonInterfaceConfig:1 specifies these values with the
                 # 'ui4' data type. Assume any negative values are caused by the
