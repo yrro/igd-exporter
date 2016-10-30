@@ -28,7 +28,10 @@ def probe(target_url):
     with concurrent.futures.ThreadPoolExecutor(4) as e:
         for metric, value in e.map(lambda metric: (metric, probe_metric(device.url, metric)), ['TotalBytesReceived', 'TotalBytesSent', 'TotalPacketsReceived', 'TotalPacketsSent']):
             if value < 0:
-                continue
+                # WANCommonInterfaceConfig:1 specifies these values with the
+                # 'ui4' data type. Assume any negative values are caused by the
+                # IGD formatting the value as a signed 32-bit integer.
+                value += 2 ** 32
             result.append(b'igd_WANDevice_1_WANCommonInterfaceConfig_1_%s{udn="%s"} %d\n' % (metric.encode('utf-8'), device.udn.encode('utf-8'), value))
 
     return result
