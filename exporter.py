@@ -1,5 +1,8 @@
-import wsgiref
+import argparse
+import ipaddress
+import socket
 import urllib
+import wsgiref
 
 import prometheus_client
 
@@ -41,5 +44,13 @@ def not_found(environ, start_response):
     return [b'Not Found\r\n']
 
 if __name__ == '__main__':
-    s = wsgiref.simple_server.make_server('', 9090, wsgi_app)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--bind-address', type=ipaddress.ip_address, default='::', help='IPv6 or IPv4 address to listen on')
+    parser.add_argument('--bind-port', type=int, default=9196, help='Port to listen on')
+    args = parser.parse_args()
+
+    class IPv6Server(wsgiref.simple_server.WSGIServer):
+        address_family = socket.AF_INET6 if args.bind_address.version == 6 else socket.AF_INET
+
+    s = wsgiref.simple_server.make_server(str(args.bind_address), args.bind_port, wsgi_app, IPv6Server)
     s.serve_forever()
