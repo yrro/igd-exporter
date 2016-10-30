@@ -25,7 +25,7 @@ def front(environ, start_response):
             b'<head><title>WSG exporter</title></head>'
             b'<body>'
                 b'<h1>WSG Exporter</h1>'
-                b'<p><a href="/probe?target=http%3A//192.0.2.1/RootDevice.xml">Probe http://192.0.2.1/RootDevice.xml</a>'
+                b'<p><a href="/probe?target=http%3A%2F%2F192.0.2.1%2FRootDevice.xml">Probe http://192.0.2.1/RootDevice.xml</a>'
                 b'<p><a href="/metrics">Metrics</a>'
             b'</body>'
         b'</html>'
