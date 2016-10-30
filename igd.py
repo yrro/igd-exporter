@@ -36,9 +36,10 @@ def search(timeout):
                 s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
 
             with concurrent.futures.ThreadPoolExecutor(len(sockets)) as ex:
-                return itertools.chain(*ex.map(lambda s: search_socket(s, timeout), sockets))
+                return itertools.chain(*ex.map(lambda s: search_socket(s, timeout, ns['i']), sockets))
 
-def search_socket(sock, timeout):
+def search_socket(sock, timeout, target='upnp:rootdevice'):
+
     addr = 'ff02::c' if sock.family == socket.AF_INET6 else '239.255.255.250'
     host = '[{}]'.format(addr) if sock.family == socket.AF_INET6 else addr
     msg = b'M-SEARCH * HTTP/1.1\r\n' \
