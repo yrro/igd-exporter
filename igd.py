@@ -1,4 +1,6 @@
 import collections
+import concurrent.futures
+import functools
 import io
 import urllib
 
@@ -23,11 +25,11 @@ def probe(target_url):
     device = probe_device(target_url)
 
     result = []
-    for metric in ['TotalBytesReceived', 'TotalBytesSent', 'TotalPacketsReceived', 'TotalPacketsSent']:
-        value = probe_metric(device.url, metric)
-        if value < 0:
-            continue
-        result.append(b'igd_WANDevice_1_WANCommonInterfaceConfig_1_%s{udn="%s"} %d\n' % (metric.encode('utf-8'), device.udn.encode('utf-8'), value))
+    with concurrent.futures.ThreadPoolExecutor(4) as e:
+        for metric, value in e.map(lambda metric: (metric, probe_metric(device.url, metric)), ['TotalBytesReceived', 'TotalBytesSent', 'TotalPacketsReceived', 'TotalPacketsSent']):
+            if value < 0:
+                continue
+            result.append(b'igd_WANDevice_1_WANCommonInterfaceConfig_1_%s{udn="%s"} %d\n' % (metric.encode('utf-8'), device.udn.encode('utf-8'), value))
 
     return result
 
