@@ -61,15 +61,15 @@ def front(environ, start_response):
             b'<head><title>WSG exporter</title></head>'
             b'<body>'
                 b'<h1>IGD Exporter</h1>',
+                b'<form method="post"><p><input type="hidden" name="search" value="1"><button type="submit">Search</button> for devices on local network (5 second timeout)</input></form>',
                 *[b'<p><a href="/probe?target=%s">Probe %s</a>' % (urllib.parse.quote_plus(target).encode('latin1'), target.encode('latin1')) for target in targets],
-                b'<form method="post"><p><input type="hidden" name="search" value="1"><button type="submit">Search</button> for devices on local network (5 second timeout)</input></form>'
                 b'<p><a href="/metrics">Metrics</a>'
             b'</body>'
         b'</html>'
     ]
 
 # Discovered devices are kept in this list.
-targets = ['http://192.0.2.1/scpd.xml']
+targets = []
 
 def probe(environ, start_response):
     '''
