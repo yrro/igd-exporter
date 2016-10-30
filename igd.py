@@ -37,8 +37,8 @@ def probe(target_url):
     return result
 
 def probe_device(target_url):
-    with urllib.request.urlopen(target_url) as root:
-        st = ElementTree.parse(root)
+    with urllib.request.urlopen(target_url) as scpd:
+        st = ElementTree.parse(scpd)
 
     url_base = st.findtext('d:URLBase', namespaces=ns)
     device = st.find("d:device[d:deviceType='urn:schemas-upnp-org:device:InternetGatewayDevice:1']/d:deviceList/d:device[d:deviceType='urn:schemas-upnp-org:device:WANDevice:1']", ns)
@@ -61,4 +61,3 @@ def probe_metric(service_url, metric):
     with urllib.request.urlopen(req) as result:
         result_tree = ElementTree.parse(result)
         return int(result_tree.findtext('.//New{}'.format(metric), namespaces=ns))
-
