@@ -2,39 +2,59 @@ import concurrent.futures
 import socket
 import wsgiref.simple_server
 
-def server_class(bind_address, bind_v6only, max_threads):
+class ThreadPoolServer(wsgiref.simple_server.WSGIServer):
+    def __pre_init(self, max_threads):
+        '''
+        This must be called, by a deriving class, before __init__ is called.
+
+        This is because the thread pool has to be set up before requests are
+        processed, and because overriding __init__ is problematic while also
+        changing its signature, *and* coöperating with IPv64Server.
+        '''
+        self.__ex = concurrent.futures.ThreadPoolExecutor(max_threads)
+
+    def process_request(self, request, client_address):
+        self.__ex.submit(self.__process_request_thread, request, client_address)
+
+    def __process_request_thread(self, request, client_address):
+        '''
+        Taken from socketserver.ThreadingMixIn
+        '''
+        try:
+            self.finish_request(request, client_address)
+            self.shutdown_request(request)
+        except:
+            self.handle_error(request, client_address)
+            self.shutdown_request(request)
+
+    def server_close(self):
+        self.__ex.shutdown()
+        super().server_close()
+
+class IPv64Server(wsgiref.simple_server.WSGIServer):
+    def __pre_init(self, server_address, bind_v6only):
+        '''
+        This must be called, by a deriving class, before __init__ is called.
+
+        This is because TCPServer.__init__ uses self.address_family to create
+        the socket.
+        '''
+        self.address_family = socket.AF_INET6 if server_address.version == 6 else socket.AF_INET
+        self.__bind_v6only = bind_v6only
+
+    def server_bind(self):
+        self.socket.setsockopt(socket.IPPROTO_IP, 15, 1) # IP_FREEBIND
+        if self.__bind_v6only is not None and bind_address.version == 6:
+            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, self.__bind_v6only)
+        super().server_bind()
+
+class Server(IPv64Server, ThreadPoolServer):
     '''
-    Give us a class that can both listen on an IPv6 socket and use a thread
-    pool to serve multiple requests simultaneously.
+    A WSGIServer that works with IPv6, and processes requests concurrently.
+
+    server_address[0] must be an ipaddress.ip_address, as opposed to the normal string.
     '''
-    class ThreadPoolServer():
-        ex = concurrent.futures.ThreadPoolExecutor(max_threads)
-
-        def process_request(self, request, client_address):
-            ThreadPoolServer.ex.submit(self.__process_request_thread, request, client_address)
-
-        def __process_request_thread(self, request, client_address):
-            try:
-                self.finish_request(request, client_address)
-                self.shutdown_request(request)
-            except:
-                self.handle_error(request, client_address)
-                self.shutdown_request(request)
-
-        def server_close(self):
-            ThreadPoolServer.ex.shutdown()
-            super().close()
-
-    class IPv64Server():
-        address_family = socket.AF_INET6 if bind_address.version == 6 else socket.AF_INET
-
-        def server_bind(self):
-            self.socket.setsockopt(socket.IPPROTO_IP, 15, 1) # IP_FREEBIND
-            if bind_v6only is not None and bind_address.version == 6:
-                self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, bind_v6only)
-            super().server_bind()
-
-    class Server(ThreadPoolServer, IPv64Server, wsgiref.simple_server.WSGIServer):
-        pass
-
-    return Server
+    def __init__(self, server_address, RequestHandlerClass, max_threads, bind_v6only, bind_and_activate=True):
+        self._IPv64Server__pre_init(server_address[0], bind_v6only)
+        self._ThreadPoolServer__pre_init(max_threads)
+        super().__init__((str(server_address[0]), server_address[1]), RequestHandlerClass, bind_and_activate)
