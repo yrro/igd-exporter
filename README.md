@@ -1,15 +1,16 @@
-igd_exporter
+igd-exporter
 ============
 
 Allows probing of UPnP Internet Gateway Devices (i.e., consumer Internet
-routers) by [Prometheus](https://prometheus.io/).
+routers) by [Prometheus](https://prometheus.io/). Modelled after the
+[Blackbox exporter](https://github.com/prometheus/blackbox_exporter).
 
 Running
 -------
 
 ```
-pip3 install prometheus_client
-python3 exporter.py
+$ python3 -m pip install git+https://github.com/yrro/igd-exporter.git
+$ igd-exporter
 ```
 
 You can then visit <http://localhost:9196/> to search for devices on your
@@ -54,9 +55,9 @@ Exporter Configuration
 Some useful options can be given to `exporter.py` on the command line.
 
 ```
-$ python3 exporter.py --help
-usage: exporter.py [-h] [--bind-address BIND_ADDRESS] [--bind-port BIND_PORT]
-                   [--bind-v6only {0,1}] [--thread-count THREAD_COUNT]
+$ igd-exporter
+usage: igd-exporter [-h] [--bind-address BIND_ADDRESS] [--bind-port BIND_PORT]
+                    [--bind-v6only {0,1}] [--thread-count THREAD_COUNT]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -70,3 +71,28 @@ optional arguments:
   --thread-count THREAD_COUNT
                         Number of request-handling threads to spawn
 ```
+
+Development
+-----------
+
+I'm trying to keep things simple and rely only on the Python standard library
+and the [prometheus_client](https://github.com/prometheus/client_python)
+module.
+
+To run `exporter` from source:
+
+```
+$ python3 -m pip install -e .
+$ igd-exporter
+```
+
+or, without installing:
+
+
+```
+$ python3 -m igd_exporter
+```
+
+TODO: figure out how to the module's `__main__` code via `pdb`. Presently
+imports fail, because `igd_exporter` is not in `sys.path` when
+`igd_exporter/__main__.py` is run as a script.
