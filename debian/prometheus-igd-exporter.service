@@ -1,0 +1,11 @@
+[Unit]
+Description=Prometheus exporter UPnP Internet Gateway Device metrics
+Documentation=https://github.com/yrro/igd-exporter file:///usr/share/doc/prometheus-igd-exporter/README.md
+
+[Service]
+Restart=always
+User=_igd-exporter
+ExecStart=/usr/bin/igd-exporter
+
+[Install]
+WantedBy=multi-user.target

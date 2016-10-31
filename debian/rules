@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+
+SHELL=/bin/bash
+
+%:
+	dh $@ --with=python3 --buildsystem=pybuild
+
+clean:
+	rm -f debian/changelog; \
+	EDITOR=true VISUAL=true \
+		dch --create \
+			--package=$(shell python3 setup.py --name) \
+			--newversion=$(shell python3 setup.py --version) \
+			'Auto-generated changelog entry; do not commit'; \
+	dh clean --with=python3 --buildsystem=pybuild
+
+# vim: ts=4 sts=0 sw=4 noet

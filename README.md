@@ -27,6 +27,18 @@ igd_WANDevice_1_WANCommonInterfaceConfig_1_TotalPacketsSent{udn="uuid:upnp-WANDe
 The ugly metric names are subject to chance as I add more of them. According to
 the UPnP specification, the `udn` label *should* be unique to a given device.
 
+Packaging
+---------
+
+To produce a Debian package:
+
+```
+$ dpkg-checkbuilddeps
+$ dpkg-buildpackage -b
+```
+
+The `prometheus-igd-exporter` package will be created in the parent directory.
+
 Prometheus configuration
 ------------------------
 
