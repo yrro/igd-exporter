@@ -43,12 +43,14 @@ def front(environ, start_response):
     Front page, containing links to the expoter's own metrics, as well as links
     to probe discovered devices.
     '''
+    global targets
+
     start_response('200 OK', [('Content-Type', 'text/html')])
 
     if environ['REQUEST_METHOD'] == 'POST':
         form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ, strict_parsing=1, encoding='latin1')
         if form.getfirst('search') == '1':
-            targets[:] = igd.search(5)
+            targets = igd.search(5)
 
     return [
         b'<html>'
