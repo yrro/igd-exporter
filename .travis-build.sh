@@ -17,6 +17,7 @@ travis_fold docker-deps-1 \
     apt -qqy install --no-install-recommends \
         build-essential devscripts equivs
 
+# Fails with an unhelpful message.
 #travis_fold docker-deps-2 \
 #    mk-build-deps -i
 
@@ -26,6 +27,7 @@ travis_fold docker-deps-2 \
         devscripts \
         git \
         python3 \
+        python3-prometheus-client \
         python3-setuptools
 
 travis_fold docker-changelog \
