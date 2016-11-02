@@ -1,4 +1,5 @@
 import cgi
+import html
 import socket
 import urllib
 import wsgiref.util
@@ -27,20 +28,19 @@ def front(environ, start_response):
     '''
     global targets
 
-    start_response('200 OK', [('Content-Type', 'text/html')])
-
     if environ['REQUEST_METHOD'] == 'POST':
         form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ, strict_parsing=1, encoding='latin1')
         if form.getfirst('search') == '1':
             targets = list(igd.search(5))
 
+    start_response('200 OK', [('Content-Type', 'text/html')])
     return [
         b'<html>'
             b'<head><title>WSG exporter</title></head>'
             b'<body>'
-                b'<h1>IGD Exporter</h1>',
+                b'<h1>IGD Exporter</h1>'
                 b'<form method="post"><p><input type="hidden" name="search" value="1"><button type="submit">Search</button> for devices on local network (5 second timeout)</input></form>',
-                *[b'<p><a href="/probe?target=%s">Probe %s</a>' % (urllib.parse.quote_plus(target).encode('latin1'), target.encode('latin1')) for target in targets],
+                *[b'<p><a href="/probe?target=%b">Probe %b</a>' % (html.escape(urllib.parse.quote_plus(t)).encode('latin1'), html.escape(t).encode('latin1')) for t in targets],
                 b'<p><a href="/metrics">Metrics</a>'
             b'</body>'
         b'</html>'
