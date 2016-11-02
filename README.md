@@ -33,7 +33,7 @@ Packaging
 To produce a Debian package:
 
 ```
-$ dpkg-checkbuilddeps
+$ debian/rules clean
 $ dpkg-buildpackage -b
 ```
 
