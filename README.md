@@ -106,7 +106,3 @@ or, without installing:
 ```
 $ python3 -m igd_exporter
 ```
-
-TODO: figure out how to the module's `__main__` code via `pdb`. Presently
-imports fail, because `igd_exporter` is not in `sys.path` when
-`igd_exporter/__main__.py` is run as a script.

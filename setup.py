@@ -30,7 +30,7 @@ setup(
     install_requires = ['prometheus_client'],
     entry_points = {
         'console_scripts': [
-            'igd-exporter = igd_exporter.__main__:main',
+            'igd-exporter = igd_exporter:main',
         ],
     },
 )
