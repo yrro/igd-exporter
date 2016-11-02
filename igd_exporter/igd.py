@@ -66,10 +66,10 @@ def search_socket(sock, timeout, target='upnp:rootdevice'):
     addr = 'ff02::c' if sock.family == socket.AF_INET6 else '239.255.255.250'
     host = '[{}]'.format(addr) if sock.family == socket.AF_INET6 else addr
     msg = b'M-SEARCH * HTTP/1.1\r\n' \
-        b'HOST: %s:1900\r\n' \
+        b'HOST: %b:1900\r\n' \
         b'MAN: "ssdp:discover"\r\n' \
         b'MX: %d\r\n' \
-        b'ST: %s\r\n' \
+        b'ST: %b\r\n' \
         b'\r\n' \
             % (host.encode('latin1'), timeout, ns['i'].encode('latin1'))
     sock.sendto(msg, (addr, 1900))
@@ -138,7 +138,7 @@ def probe(target_url):
                 # 'ui4' data type. Assume any negative values are caused by the
                 # IGD formatting the value as a signed 32-bit integer.
                 value += 2 ** 32
-            result.append(b'igd_WANDevice_1_WANCommonInterfaceConfig_1_%s{udn="%s"} %d\n' % (metric.encode('utf-8'), device.udn.encode('utf-8'), value))
+            result.append(b'igd_WANDevice_1_WANCommonInterfaceConfig_1_%b{udn="%b"} %d\n' % (metric.encode('utf-8'), device.udn.encode('utf-8'), value))
 
     return result
 
