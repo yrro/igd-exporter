@@ -53,7 +53,8 @@ scrape_configs:
  - job_name: igd
    metrics_path: /probe
    static_configs:
-    - targets: ['http://192.0.2.1:80/scpd.xml']
+    - targets:
+        - http://192.0.2.1:80/scpd.xml
    relabel_configs:
     - source_labels: [__address__]
       target_label: __param_target

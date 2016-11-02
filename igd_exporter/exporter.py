@@ -33,6 +33,33 @@ def front(environ, start_response):
         if form.getfirst('search') == '1':
             targets = list(igd.search(5))
 
+    config = []
+    if targets:
+        config.append(
+            b'<p>Example config for the above devices:'
+            b'<pre>\n'
+            b'scrape_configs:\n'
+            b'  - job_name: igd\n'
+            b'    metrics_path: /probe\n'
+            b'    static_configs:\n'
+            b'      - targets:\n'
+        )
+        config.append(
+            *[b'          - %b\n' % html.escape(t).encode('latin1') for t in targets]
+        )
+        config.append(
+            b'    relabel_configs:\n'
+            b'      - source_labels: [__address__]\n'
+            b'        target_label: __param_target\n'
+            b'      - source_labels: [__param_target]\n'
+            b'        target_label: instance\n'
+            b'      - target_label: __address__\n'
+            b'        replacement: %b # IGD exporter\n' % html.escape(environ['HTTP_HOST']).encode('latin1')
+        )
+        config.append(
+            b'</pre>'
+        )
+
     start_response('200 OK', [('Content-Type', 'text/html')])
     return [
         b'<html>'
@@ -41,7 +68,8 @@ def front(environ, start_response):
                 b'<h1>IGD Exporter</h1>'
                 b'<form method="post"><p><input type="hidden" name="search" value="1"><button type="submit">Search</button> for devices on local network (5 second timeout)</input></form>',
                 *[b'<p><a href="/probe?target=%b">Probe %b</a>' % (html.escape(urllib.parse.quote_plus(t)).encode('latin1'), html.escape(t).encode('latin1')) for t in targets],
-                b'<p><a href="/metrics">Metrics</a>'
+                b'<p><a href="/metrics">Metrics</a>',
+                *config,
             b'</body>'
         b'</html>'
     ]
