@@ -5,6 +5,8 @@ Allows probing of UPnP Internet Gateway Devices (i.e., consumer Internet
 routers) by [Prometheus](https://prometheus.io/). Modelled after the
 [Blackbox exporter](https://github.com/prometheus/blackbox_exporter).
 
+[![Build Status](https://travis-ci.org/yrro/igd-exporter.svg?branch=master)](https://travis-ci.org/yrro/igd-exporter)
+
 Running
 -------
 
