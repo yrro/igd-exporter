@@ -53,7 +53,7 @@ def search(timeout):
                 s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
 
             with concurrent.futures.ThreadPoolExecutor(len(sockets)) as ex:
-                return itertools.chain(*ex.map(lambda s: search_socket(s, timeout, ns['i']), sockets))
+                return itertools.chain.from_iterable(ex.map(lambda s: search_socket(s, timeout, ns['i']), sockets))
 
 def search_socket(sock, timeout, target='upnp:rootdevice'):
     '''
