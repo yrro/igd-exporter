@@ -108,7 +108,7 @@ def search_parse(buf):
     version, status, reason = status.split()
     if status != b'200':
         raise Exception('Unknown status {}'.format(status))
-    headers = wsgiref.headers.Headers()
+    headers = wsgiref.headers.Headers([])
     while True:
         header, sep, buf = buf.partition(b'\r\n')
         if header == b'':
