@@ -1,5 +1,6 @@
 import concurrent.futures
 import socket
+import sys
 import wsgiref.simple_server
 
 class ThreadPoolServer(wsgiref.simple_server.WSGIServer):
@@ -11,6 +12,9 @@ class ThreadPoolServer(wsgiref.simple_server.WSGIServer):
         processed, and because overriding __init__ is problematic while also
         changing its signature, *and* coöperating with IPv64Server.
         '''
+        if sys.version_info.major <= 3 and sys.version_info.minor < 5:
+            if max_threads is None:
+                max_threads = 4
         self.__ex = concurrent.futures.ThreadPoolExecutor(max_threads)
 
     def process_request(self, request, client_address):
