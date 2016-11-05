@@ -1,5 +1,6 @@
 import cgi
 import html
+import io
 import socket
 import urllib
 import wsgiref.util
@@ -33,48 +34,57 @@ def front(environ, start_response):
         if form.getfirst('search') == '1':
             targets = list(igd.search(5))
 
-    page = []
-    page.extend([
-        b'<html>'
-            b'<head><title>WSG exporter</title></head>'
-            b'<body>'
-                b'<h1>IGD Exporter</h1>'
-    ])
-    if targets:
-        page.extend([
-                b'<p>Devices found; use this Prometheus config to scrape their metrics:'
-                b'<blockquote>\n'
-                    b'<pre>\n'
-                    b'scrape_configs:\n'
-                    b'  - job_name: igd\n'
-                    b'    metrics_path: /probe\n'
-                    b'    static_configs:\n'
-                    b'      - targets:\n',
-                    *[b'          - %b\n' % html.escape(t).encode('latin1') for t in targets],
-                    b'    relabel_configs:\n'
-                    b'      - source_labels: [__address__]\n'
-                    b'        target_label: __param_target\n'
-                    b'      - source_labels: [__param_target]\n'
-                    b'        target_label: instance\n'
-                    b'      - target_label: __address__\n',
-                    b'        replacement: %b # IGD exporter\n' % html.escape(environ['HTTP_HOST']).encode('latin1'),
-                    b'</pre>'
-                b'</blockquote>'
-                b'<p>Use these links to retrieve their metrics manually:'
-                b'<ul>',
-                    *[b'<li><a href="/probe?target=%b">%b</a>' % (html.escape(urllib.parse.quote_plus(t)).encode('latin1'), html.escape(t).encode('latin1')) for t in targets],
-                b'</ul>'
-                b'<hr>'
-        ])
-    page.extend([
-                b'<form method="post"><p><input type="hidden" name="search" value="1"><button type="submit">Search</button> for devices on local network</input></form>'
-                b'<p><a href="/metrics">Metrics</a>'
-            b'</body>'
-        b'</html>'
-    ])
+    with io.BytesIO() as page:
+        page.write(
+            b'<html>'
+                b'<head><title>WSG exporter</title></head>'
+                b'<body>'
+                    b'<h1>IGD Exporter</h1>'
+        )
+        if targets:
+            page.write(
+                    b'<p>Devices found; use this Prometheus config to scrape their metrics:'
+                    b'<blockquote>'
+                        b'<pre>\n'
+                        b'scrape_configs:\n'
+                        b'  - job_name: igd\n'
+                        b'    metrics_path: /probe\n'
+                        b'    static_configs:\n'
+                        b'      - targets:\n'
+            )
+            for t in targets:
+                page.write(
+                        '          - {}\n'.format(html.escape(t)).encode('latin1')
+                )
+            page.write(
+                        b'    relabel_configs:\n'
+                        b'      - source_labels: [__address__]\n'
+                        b'        target_label: __param_target\n'
+                        b'      - source_labels: [__param_target]\n'
+                        b'        target_label: instance\n'
+                        b'      - target_label: __address__\n'
+            )
+            page.write('        replacement: {} # IGD exporter\n'.format(html.escape(environ['HTTP_HOST'])).encode('latin1'))
+            page.write( b'</pre>'
+                    b'</blockquote>'
+                    b'<p>Use these links to retrieve their metrics manually:'
+                    b'<ul>'
+            )
+            for t in targets:
+                page.write('<li><a href="/probe?target={}">{}</a>'.format(html.escape(urllib.parse.quote_plus(t)), html.escape(t)).encode('latin1'))
+            page.write(
+                    b'</ul>'
+                    b'<hr>'
+            )
+        page.write(
+                    b'<form method="post"><p><input type="hidden" name="search" value="1"><button type="submit">Search</button> for devices on local network</input></form>'
+                    b'<p><a href="/metrics">Metrics</a>'
+                b'</body>'
+            b'</html>'
+        )
 
-    start_response('200 OK', [('Content-Type', 'text/html')])
-    return page
+        start_response('200 OK', [('Content-Type', 'text/html')])
+        return [page.getvalue()]
 
 # Discovered devices are kept in this list.
 targets = []
@@ -86,7 +96,7 @@ def probe(environ, start_response):
     qs = urllib.parse.parse_qs(environ['QUERY_STRING'])
     body = igd.probe(qs['target'][0])
     start_response('200 OK', [('Content-Type', 'text/plain; charset=utf-8; version=0.0.4')])
-    return body
+    return [body]
 
 prometheus_app = prometheus_client.make_wsgi_app()
 

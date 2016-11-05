@@ -65,13 +65,13 @@ def search_socket(sock, timeout, target='upnp:rootdevice'):
     '''
     addr = 'ff02::c' if sock.family == socket.AF_INET6 else '239.255.255.250'
     host = '[{}]'.format(addr) if sock.family == socket.AF_INET6 else addr
-    msg = b'M-SEARCH * HTTP/1.1\r\n' \
-        b'HOST: %b:1900\r\n' \
-        b'MAN: "ssdp:discover"\r\n' \
-        b'MX: %d\r\n' \
-        b'ST: %b\r\n' \
-        b'\r\n' \
-            % (host.encode('latin1'), timeout, ns['i'].encode('latin1'))
+    msg = 'M-SEARCH * HTTP/1.1\r\n' \
+        'HOST: {}:1900\r\n' \
+        'MAN: "ssdp:discover"\r\n' \
+        'MX: {}\r\n' \
+        'ST: {}\r\n' \
+        '\r\n' \
+            .format(host, timeout, ns['i']).encode('latin1')
     sock.sendto(msg, (addr, 1900))
 
     result = []
@@ -126,21 +126,20 @@ def probe(target_url):
 
     Metrics are labelled with the service's UDN.
 
-    Returns a list of byte strings in the Prometheus text format.
+    Returns a bytestring in the Prometheus text format.
     '''
     device = probe_device(target_url)
 
-    result = []
-    with concurrent.futures.ThreadPoolExecutor(4) as ex:
-        for metric, value in ex.map(lambda metric: (metric, probe_metric(device.url, metric)), ['TotalBytesReceived', 'TotalBytesSent', 'TotalPacketsReceived', 'TotalPacketsSent']):
-            if value < 0:
-                # WANCommonInterfaceConfig:1 specifies these values with the
-                # 'ui4' data type. Assume any negative values are caused by the
-                # IGD formatting the value as a signed 32-bit integer.
-                value += 2 ** 32
-            result.append(b'igd_WANDevice_1_WANCommonInterfaceConfig_1_%b{udn="%b"} %d\n' % (metric.encode('utf-8'), device.udn.encode('utf-8'), value))
-
-    return result
+    with io.BytesIO() as out:
+        with concurrent.futures.ThreadPoolExecutor(4) as ex:
+            for metric, value in ex.map(lambda metric: (metric, probe_metric(device.url, metric)), ['TotalBytesReceived', 'TotalBytesSent', 'TotalPacketsReceived', 'TotalPacketsSent']):
+                if value < 0:
+                    # WANCommonInterfaceConfig:1 specifies these values with the
+                    # 'ui4' data type. Assume any negative values are caused by the
+                    # IGD formatting the value as a signed 32-bit integer.
+                    value += 2 ** 32
+                out.write('igd_WANDevice_1_WANCommonInterfaceConfig_1_{}{{udn="{}"}} {}\n'.format(metric, device.udn, value).encode('utf-8'))
+        return out.getvalue()
 
 def probe_device(target_url):
     '''
