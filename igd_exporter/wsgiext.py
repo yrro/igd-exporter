@@ -32,8 +32,8 @@ class ThreadPoolServer(wsgiref.simple_server.WSGIServer):
             self.shutdown_request(request)
 
     def server_close(self):
-        self.__ex.shutdown()
         super().server_close()
+        self.__ex.shutdown()
 
 class IPv64Server(wsgiref.simple_server.WSGIServer):
     def __pre_init(self, server_address, bind_v6only):
