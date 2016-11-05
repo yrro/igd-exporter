@@ -22,7 +22,7 @@ setup(
         'Environment :: No Input/Output (Daemon)',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.4',
         'Topic :: System :: Monitoring',
     ],
     keywords = 'prometheus monitoring upnp igd',

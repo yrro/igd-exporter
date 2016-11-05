@@ -6,12 +6,12 @@ Build-Depends:
  debhelper (>= 10),
  devscripts,
  git,
- python3 (>= 3.5),
+ python3 (>= 3.4),
  python3-prometheus-client,
  python3-setuptools,
 Standards-Version: 3.9.7
 Homepage: https://github.com/yrro/igd-exporter
-X-Python3-Version: >= 3.5
+X-Python3-Version: >= 3.4
 
 Package: prometheus-igd-exporter
 Architecture: all
