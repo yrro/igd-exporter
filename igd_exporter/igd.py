@@ -9,8 +9,17 @@ import urllib.request
 import urllib.parse
 import wsgiref.headers
 
+import prometheus_client
+
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element as E, SubElement as sE, ElementTree as ET, QName
+
+metrics = {
+    'TotalBytesReceived': 'Count of bytes received by all WAN{PPP/IP}Connections',
+    'TotalBytesSent': 'Count of bytes transmitted by all WAN{PPP/IP}Connections',
+    'TotalPacketsReceived': 'Count of packets recieved by all WAN{PPP/IP}Connections',
+    'TotalPacketsSent': 'Count of packets transmitted by all WAN{PPP/IP}Connections'
+}
 
 ns = {
     'd': 'urn:schemas-upnp-org:device-1-0',
@@ -121,25 +130,33 @@ def search_parse(buf):
 
 def probe(target_url):
     '''
-    Retrieve interesting metrics from the services found at the given root
-    device URL.
+    Returns a collector populated with metrics from the services found at the
+    given root device URL.
 
     Metrics are labelled with the service's UDN.
-
-    Returns a bytestring in the Prometheus text format.
     '''
     device = probe_device(target_url)
+    return Collector(device)
 
-    with io.BytesIO() as out:
+class Collector:
+    def __init__(self, device):
+        self.__device = device
+
+    def collect(self):
         with concurrent.futures.ThreadPoolExecutor(4) as ex:
-            for metric, value in ex.map(lambda metric: (metric, probe_metric(device.url, metric)), ['TotalBytesReceived', 'TotalBytesSent', 'TotalPacketsReceived', 'TotalPacketsSent']):
+            for metric, value in ex.map(lambda metric: (metric, probe_metric(self.__device.url, metric)), metrics.keys()):
+                g = prometheus_client.core.GaugeMetricFamily(
+                    'igd_WANDevice_1_WANCommonInterfaceConfig_1_{}'.format(metric),
+                    metrics[metric],
+                    labels=['udn'],
+                )
                 if value < 0:
                     # WANCommonInterfaceConfig:1 specifies these values with the
                     # 'ui4' data type. Assume any negative values are caused by the
                     # IGD formatting the value as a signed 32-bit integer.
                     value += 2 ** 32
-                out.write('igd_WANDevice_1_WANCommonInterfaceConfig_1_{}{{udn="{}"}} {}\n'.format(metric, device.udn, value).encode('utf-8'))
-        return out.getvalue()
+                g.add_metric([self.__device.udn], value)
+                yield g
 
 def probe_device(target_url):
     '''

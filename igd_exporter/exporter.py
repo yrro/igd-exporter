@@ -94,8 +94,12 @@ def probe(environ, start_response):
     Performs a probe using the given root device URL.
     '''
     qs = urllib.parse.parse_qs(environ['QUERY_STRING'])
-    body = igd.probe(qs['target'][0])
-    start_response('200 OK', [('Content-Type', 'text/plain; charset=utf-8; version=0.0.4')])
+
+    reg = prometheus_client.CollectorRegistry()
+    reg.register(igd.probe(qs['target'][0]))
+    body = prometheus_client.generate_latest(reg)
+
+    start_response('200 OK', [('Content-Type', prometheus_client.CONTENT_TYPE_LATEST)])
     return [body]
 
 prometheus_app = prometheus_client.make_wsgi_app()
