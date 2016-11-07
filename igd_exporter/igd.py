@@ -126,7 +126,7 @@ def search_parse(buf):
             break
         else:
             name, sep, value = header.partition(b':')
-            headers.add_header(name.decode('latin1'), value.lstrip().decode('latin1'))
+            headers.add_header(name.decode('latin1').strip(), value.decode('latin1').strip())
 
     return headers, buf
 
