@@ -64,7 +64,7 @@ def search(timeout):
             with concurrent.futures.ThreadPoolExecutor(len(sockets)) as ex:
                 return itertools.chain.from_iterable(ex.map(lambda s: search_socket(s, timeout, ns['i']), sockets))
 
-def search_socket(sock, timeout, target='upnp:rootdevice'):
+def search_socket(sock, timeout, target='ssdp:all'):
     '''
     Transmit an SSDP search request to the local network.
 
@@ -80,7 +80,7 @@ def search_socket(sock, timeout, target='upnp:rootdevice'):
         'MX: {}\r\n' \
         'ST: {}\r\n' \
         '\r\n' \
-            .format(host, timeout, ns['i']).encode('latin1')
+            .format(host, timeout, target).encode('latin1')
     sock.sendto(msg, (addr, 1900))
 
     result = []
