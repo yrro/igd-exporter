@@ -73,15 +73,17 @@ def search_socket(sock, timeout, target='ssdp:all'):
     Returns a list of root device URLs.
     '''
     addr = 'ff02::c' if sock.family == socket.AF_INET6 else '239.255.255.250'
-    host = '[{}]'.format(addr) if sock.family == socket.AF_INET6 else addr
-    msg = 'M-SEARCH * HTTP/1.1\r\n' \
-        'HOST: {}:1900\r\n' \
-        'MAN: "ssdp:discover"\r\n' \
-        'MX: {}\r\n' \
-        'ST: {}\r\n' \
-        '\r\n' \
-            .format(host, timeout, target).encode('latin1')
-    sock.sendto(msg, (addr, 1900))
+
+    h = wsgiref.headers.Headers([])
+    h['HOST'] = '[{}]'.format(addr) if sock.family == socket.AF_INET6 else addr
+    h['MAN'] = '"ssdp:discover"'
+    h['MX'] = str(timeout)
+    h['ST'] = target
+
+    with io.BytesIO() as out:
+        out.write(b'M-SEARCH * HTTP/1.1\r\n')
+        out.write(bytes(h))
+        sock.sendto(out.getvalue(), (addr, 1900))
 
     result = []
 
