@@ -6,6 +6,7 @@ Documentation=https://github.com/yrro/igd-exporter file:///usr/share/doc/prometh
 Restart=always
 User=_igd-exporter
 ExecStart=/usr/bin/igd-exporter
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target
