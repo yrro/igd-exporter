@@ -27,7 +27,10 @@ setup(
     ],
     keywords = 'prometheus monitoring upnp igd',
     packages = ['igd_exporter'],
-    install_requires = ['prometheus_client'],
+    install_requires = [
+        'prometheus_client',
+        'setuptools'
+    ],
     entry_points = {
         'console_scripts': [
             'igd-exporter = igd_exporter:main',
