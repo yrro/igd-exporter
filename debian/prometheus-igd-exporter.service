@@ -7,6 +7,12 @@ Restart=always
 User=_igd-exporter
 ExecStart=/usr/bin/igd-exporter
 Environment=PYTHONUNBUFFERED=1
+NoNewPrivileges=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
 
 [Install]
 WantedBy=multi-user.target
