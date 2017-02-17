@@ -1,4 +1,5 @@
 import concurrent.futures
+import http
 import socket
 import sys
 import wsgiref.simple_server
@@ -51,6 +52,14 @@ class IPv64Server(wsgiref.simple_server.WSGIServer):
         if self.__bind_v6only is not None and bind_address.version == 6:
             self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, self.__bind_v6only)
         super().server_bind()
+
+class SilentRequestHandler(wsgiref.simple_server.WSGIRequestHandler):
+    def log_request(self, code, message):
+        if isinstance(code, http.HTTPStatus) and code.value < 400:
+            return
+        elif code[0] < '4':
+            return
+        super().log_request(code, message)
 
 class Server(IPv64Server, ThreadPoolServer):
     '''

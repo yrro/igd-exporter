@@ -16,6 +16,6 @@ def main():
     parser.add_argument('--thread-count', type=int, help='Number of request-handling threads to spawn')
     args = parser.parse_args()
 
-    server = wsgiext.Server((args.bind_address, args.bind_port), wsgiref.simple_server.WSGIRequestHandler, args.thread_count, args.bind_v6only)
+    server = wsgiext.Server((args.bind_address, args.bind_port), wsgiext.SilentRequestHandler, args.thread_count, args.bind_v6only)
     server.set_app(exporter.wsgi_app)
     server.serve_forever(poll_interval=600)
