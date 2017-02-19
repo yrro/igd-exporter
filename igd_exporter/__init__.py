@@ -1,5 +1,8 @@
 import argparse
+import functools
 import ipaddress
+import signal
+import threading
 import wsgiref.simple_server
 
 from . import wsgiext
@@ -18,4 +21,14 @@ def main():
 
     server = wsgiext.Server((args.bind_address, args.bind_port), wsgiext.SilentRequestHandler, args.thread_count, args.bind_v6only)
     server.set_app(exporter.wsgi_app)
-    server.serve_forever(poll_interval=600)
+    wsgi_thread = threading.Thread(target=functools.partial(server.serve_forever, 86400), name='wsgi')
+
+    def handle_sigterm(signum, frame):
+        server.shutdown()
+    signal.signal(signal.SIGTERM, handle_sigterm)
+
+    wsgi_thread.start()
+
+    wsgi_thread.join()
+
+    server.server_close()

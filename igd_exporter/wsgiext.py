@@ -36,6 +36,25 @@ class ThreadPoolServer(wsgiref.simple_server.WSGIServer):
         super().server_close()
         self.__ex.shutdown()
 
+class InstantShutdownServer(wsgiref.simple_server.WSGIServer):
+    '''
+    Connecting to the underlying SocketServer's listening socket will wake it
+    up. It will then immediately check the shutdown flag, rather than waiting
+    for the poll_interval.
+    '''
+    def shutdown(self):
+        with socket.socket(self.socket.family) as s:
+            s.setblocking(0)
+            try:
+                s.connect(self.socket.getsockname())
+            except BlockingIOError:
+                pass
+            # Now the thread running serve_forever is waiting for the client
+            # to send a request...
+            super().shutdown()
+        # Now our socket is closed, the thread running serve_forever will check
+        # __shutdown_request and return.
+
 class IPv64Server(wsgiref.simple_server.WSGIServer):
     def __pre_init(self, server_address, bind_v6only):
         '''
@@ -61,7 +80,7 @@ class SilentRequestHandler(wsgiref.simple_server.WSGIRequestHandler):
             return
         super().log_request(code, message)
 
-class Server(IPv64Server, ThreadPoolServer):
+class Server(IPv64Server, InstantShutdownServer, ThreadPoolServer):
     '''
     A WSGIServer that works with IPv6, and processes requests concurrently.
 
