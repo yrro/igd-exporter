@@ -28,7 +28,7 @@ class ThreadPoolServer(wsgiref.simple_server.WSGIServer):
         try:
             self.finish_request(request, client_address)
             self.shutdown_request(request)
-        except:
+        except Exception:
             self.handle_error(request, client_address)
             self.shutdown_request(request)
 

@@ -96,7 +96,7 @@ def search_socket(sock, timeout, target='ssdp:all'):
 
         try:
             result.append(search_result(buf, addr))
-        except:
+        except Exception:
             traceback.print_exc()
 
     return result
@@ -108,7 +108,7 @@ def search_result(buf, addr):
     try:
         headers, buf = search_parse(buf)
         return headers['Location']
-    except:
+    except Exception:
         raise Exception('Malformed search result from {}'.format(addr))
 
 def search_parse(buf):

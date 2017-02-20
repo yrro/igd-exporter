@@ -4,7 +4,7 @@ from setuptools import setup
 
 try:
     git_ref = subprocess.check_output(['git', 'rev-parse', '--verify', '--short', 'HEAD']).decode().rstrip()
-except:
+except Exception:
     git_ref = '?'
 
 setup(
