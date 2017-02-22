@@ -20,14 +20,22 @@ network, and probe each discovered device to see its available metrics; for
 instance:
 
 ```
-igd_WANDevice_1_WANCommonInterfaceConfig_1_TotalBytesReceived{udn="uuid:upnp-WANDevice-1_0-e0f478651f51"}    340579275
-igd_WANDevice_1_WANCommonInterfaceConfig_1_TotalBytesSent{udn="uuid:upnp-WANDevice-1_0-e0f478651f51"}        2098807488
-igd_WANDevice_1_WANCommonInterfaceConfig_1_TotalPacketsReceived{udn="uuid:upnp-WANDevice-1_0-e0f478651f51"}  27506947
-igd_WANDevice_1_WANCommonInterfaceConfig_1_TotalPacketsSent{udn="uuid:upnp-WANDevice-1_0-e0f478651f51"}      10983346
+# HELP igd_common_sent_packets_total Packets sent by all connections
+# TYPE igd_common_sent_packets_total counter
+igd_common_sent_packets_total{udn="uuid:upnp-WANDevice-1_0-944452e7ebdc"} 164336.0
+# HELP igd_common_received_packets_total Packets received by all connections
+# TYPE igd_common_received_packets_total counter
+igd_common_received_packets_total{udn="uuid:upnp-WANDevice-1_0-944452e7ebdc"} 485942.0
+# HELP igd_common_sent_bytes Bytes sent by all connections
+# TYPE igd_common_sent_bytes counter
+igd_common_sent_bytes{udn="uuid:upnp-WANDevice-1_0-944452e7ebdc"} 37393863.0
+# HELP igd_common_received_bytes Bytes received by all connections
+# TYPE igd_common_received_bytes counter
+igd_common_received_bytes{udn="uuid:upnp-WANDevice-1_0-944452e7ebdc"} 448588847.0
 ```
 
-The ugly metric names are subject to chance as I add more of them. According to
-the UPnP specification, the `udn` label *should* be unique to a given device.
+According to the UPnP specification, the `udn` label *should* be unique to a
+given device.
 
 Packaging
 ---------

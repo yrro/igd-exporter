@@ -14,11 +14,18 @@ import prometheus_client
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element as E, SubElement as sE, ElementTree as ET, QName
 
-metrics = {
-    'TotalBytesReceived': 'Count of bytes received by all WAN{PPP/IP}Connections',
-    'TotalBytesSent': 'Count of bytes transmitted by all WAN{PPP/IP}Connections',
-    'TotalPacketsReceived': 'Count of packets recieved by all WAN{PPP/IP}Connections',
-    'TotalPacketsSent': 'Count of packets transmitted by all WAN{PPP/IP}Connections'
+class Metric(collections.namedtuple('Metric', 'name desc')):
+    '''
+    Describes a Prometheus metric.
+    '''
+    pass
+
+# Maps IGD metric names to Prometheus metrics
+igd_metrics = {
+      'TotalBytesReceived': Metric(name='igd_common_received_bytes', desc='Bytes received by all connections'),
+          'TotalBytesSent': Metric(name='igd_common_sent_bytes', desc='Bytes sent by all connections'),
+    'TotalPacketsReceived': Metric(name='igd_common_received_packets_total', desc='Packets received by all connections'),
+        'TotalPacketsSent': Metric(name='igd_common_sent_packets_total', desc='Packets sent by all connections'),
 }
 
 ns = {
@@ -32,7 +39,7 @@ ns = {
 ElementTree.register_namespace('s', ns['s'])
 ElementTree.register_namespace('u', ns['i'])
 
-class Device(collections.namedtuple('Device', ['udn', 'url'])):
+class Device(collections.namedtuple('Device', 'udn url')):
     '''
     Collects interesting attributes about a device.
 
@@ -146,12 +153,8 @@ class Collector:
 
     def collect(self):
         with concurrent.futures.ThreadPoolExecutor(4) as ex:
-            for metric, value in ex.map(lambda metric: (metric, probe_metric(self.__device.url, metric)), metrics.keys()):
-                g = prometheus_client.core.GaugeMetricFamily(
-                    'igd_WANDevice_1_WANCommonInterfaceConfig_1_{}'.format(metric),
-                    metrics[metric],
-                    labels=['udn'],
-                )
+            for metric, value in ex.map(lambda kv: (kv[1], probe_metric(self.__device.url, kv[0])), igd_metrics.items()):
+                g = prometheus_client.core.CounterMetricFamily(metric.name, metric.desc, labels=['udn'])
                 if value < 0:
                     # WANCommonInterfaceConfig:1 specifies these values with the
                     # 'ui4' data type. Assume any negative values are caused by the
