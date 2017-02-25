@@ -11,6 +11,7 @@ Build-Depends:
  python3-setuptools,
 Standards-Version: 3.9.7
 Homepage: https://github.com/yrro/igd-exporter
+Testsuite: autopkgtest
 X-Python3-Version: >= 3.4
 
 Package: prometheus-igd-exporter

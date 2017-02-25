@@ -1,4 +1,6 @@
+dist: trusty
 sudo: required
+language: generic
 
 services:
     - docker
@@ -7,4 +9,4 @@ install:
     docker pull debian:stretch
 
 script:
-    docker run -v "$PWD:/workspace/igd-exporter" -w /workspace/igd-exporter debian:stretch './.travis-build.sh'
+    ./.travis-script.sh
