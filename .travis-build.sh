@@ -19,7 +19,7 @@ travis_fold docker-deps-1 \
 
 # Fails with an unhelpful message.
 travis_fold docker-deps-2 \
-    mk-build-deps -i
+    mk-build-deps -i -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
 
 #travis_fold docker-deps-2 \
 #    apt-get -qqy install \

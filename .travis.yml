@@ -8,5 +8,11 @@ services:
 install:
     docker pull debian:stretch
 
+before_script:
+    mkdir igd-exporter && sudo mount --bind "$PWD" igd-exporter
+
 script:
     ./.travis-script.sh
+
+after_script:
+    sudo umount igd-exporter
