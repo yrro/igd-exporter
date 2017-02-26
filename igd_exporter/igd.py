@@ -79,6 +79,10 @@ def search_socket(sock, timeout, target='ssdp:all'):
 
     Returns a list of root device URLs.
     '''
+    # XXX investigate use of other IPv6 multicast addresses.
+    #   ff02::c - link scope
+    #   ff05::c - site scope - do we have to use IPv6 MLD protocol to recieve
+    #             messages from different network segments?
     addr = 'ff02::c' if sock.family == socket.AF_INET6 else '239.255.255.250'
 
     h = wsgiref.headers.Headers([])
