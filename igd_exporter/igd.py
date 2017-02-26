@@ -194,7 +194,7 @@ def probe_metric(service_url, metric):
     request_tree = ET(envelope)
     with io.BytesIO() as out:
         request_tree.write(out, xml_declaration=True)
-        out.write(b'\n') # or else my Belkin F5D8236-4 never responds...
+        out.write(b'\r\n') # or else my Belkin F5D8236-4 never responds...
         req = urllib.request.Request(service_url, out.getvalue())
 
     req.add_header('Content-Type', 'text/xml')
