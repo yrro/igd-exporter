@@ -176,6 +176,8 @@ def probe_device(target_url):
         st = ElementTree.parse(scpd)
 
     url_base = st.findtext('d:URLBase', namespaces=ns)
+    if url_base is None:
+        url_base = target_url
     device = st.find("d:device[d:deviceType='urn:schemas-upnp-org:device:InternetGatewayDevice:1']/d:deviceList/d:device[d:deviceType='urn:schemas-upnp-org:device:WANDevice:1']", ns)
     url_path = device.findtext("d:serviceList/d:service[d:serviceType='urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1']/d:controlURL", namespaces=ns)
 
