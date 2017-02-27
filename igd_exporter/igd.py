@@ -30,7 +30,7 @@ igd_metrics = {
 
 ns = {
     'd': 'urn:schemas-upnp-org:device-1-0',
-    's': 'http://schemas.xmlsoap.org/soap/envelope',
+    's': 'http://schemas.xmlsoap.org/soap/envelope/',
     'i': 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1',
 }
 
