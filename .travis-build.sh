@@ -10,18 +10,18 @@ function travis_fold {
     echo "travis_fold:end:$name"
 }
 
-travis_fold docker-deps-0 \
+travis_fold build-deps-0 \
     apt-get -qq update
 
-travis_fold docker-deps-1 \
+travis_fold build-deps-1 \
     apt-get -qqy install --no-install-recommends \
         build-essential devscripts equivs git
 
-travis_fold docker-deps-2 \
+travis_fold build-deps-2 \
     mk-build-deps -i -t 'apt-get -qqy --no-install-recommends'
 
-travis_fold docker-changelog \
+travis_fold changelog \
     fakeroot debian/rules clean
 
-travis_fold docker-buildpackage \
+travis_fold buildpackage \
     dpkg-buildpackage -nc -b
