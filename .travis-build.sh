@@ -15,7 +15,7 @@ travis_fold docker-deps-0 \
 
 travis_fold docker-deps-1 \
     apt -qqy install --no-install-recommends \
-        build-essential devscripts equivs
+        build-essential devscripts equivs git
 
 travis_fold docker-deps-2 \
     mk-build-deps -i -t 'apt-get -qqy --no-install-recommends'

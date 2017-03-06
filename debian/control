@@ -4,8 +4,6 @@ Section: net
 Priority: optional
 Build-Depends:
  debhelper (>= 10),
- devscripts,
- git,
  python3 (>= 3.4),
  python3-prometheus-client,
  python3-setuptools,
