@@ -1,6 +1,5 @@
 import os
 import subprocess
-import sys
 
 from setuptools import setup
 
