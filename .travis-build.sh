@@ -11,10 +11,10 @@ function travis_fold {
 }
 
 travis_fold docker-deps-0 \
-    apt -q update
+    apt-get -qq update
 
 travis_fold docker-deps-1 \
-    apt -qqy install --no-install-recommends \
+    apt-get -qqy install --no-install-recommends \
         build-essential devscripts equivs git
 
 travis_fold docker-deps-2 \
