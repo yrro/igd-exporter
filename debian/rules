@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-SHELL=/bin/bash
+SHELL := /bin/bash
 
 %:
 	dh $@ --with=python3 --buildsystem=pybuild
