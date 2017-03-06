@@ -74,7 +74,7 @@ class IPv64Server(wsgiref.simple_server.WSGIServer):
 
 class SilentRequestHandler(wsgiref.simple_server.WSGIRequestHandler):
     def log_request(self, code, message):
-        if isinstance(code, http.HTTPStatus) and code.value < 400:
+        if hasattr(http, 'HTTPStatus') and isinstance(code, http.HTTPStatus) and code.value < 400:
             return
         elif code[0] < '4':
             return
