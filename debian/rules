@@ -10,8 +10,8 @@ clean:
 		rm -f debian/changelog; \
 		EDITOR=true VISUAL=true \
 			dch --create \
-				--package=$(shell python3 setup.py --name) \
-				--newversion=$(shell python3 setup.py --version) \
+				--package='$(shell python3 setup.py --name)' \
+				--newversion='$(shell python3 setup.py --version)' \
 				'Auto-generated changelog entry; do not commit'; \
 	fi
 	dh clean --with=python3 --buildsystem=pybuild
