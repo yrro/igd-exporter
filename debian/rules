@@ -6,7 +6,7 @@ SHELL := /bin/bash
 	dh $@ --with=python3 --buildsystem=pybuild
 
 clean:
-	if [[ -d .git ]]; then \
+	if [[ -d .git ]] && command -v dch > /dev/null; then \
 		rm -f debian/changelog; \
 		EDITOR=true VISUAL=true \
 			dch --create \
