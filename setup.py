@@ -13,9 +13,9 @@ if os.path.exists('debian/changelog'):
             version = tokens[1]
             break
 else:
-    build_no = os.environ.get('BUILD_NUMBER', 'dev0')
+    build_no = os.environ.get('BUILD_NUMBER', '0')
     git_ref = subprocess.check_output(['git', 'rev-parse', '--verify', '--short', 'HEAD']).decode().rstrip()
-    version = '0.{}+g{}'.format(build_no, git_ref)
+    version = '0.dev{}+g{}'.format(build_no, git_ref)
 
 setup(
     name = 'igd-exporter',
