@@ -94,7 +94,13 @@ def search_socket(sock, timeout, target='ssdp:all'):
     with io.BytesIO() as out:
         out.write(b'M-SEARCH * HTTP/1.1\r\n')
         out.write(bytes(h))
-        sock.sendto(out.getvalue(), (addr, 1900))
+        try:
+            sock.sendto(out.getvalue(), (addr, 1900))
+        except Exception as e:
+            import sys
+            print('{!r}.sendto({!r}..., ({!r}, 1900))'.format(sock, out.getvalue()[:32], addr), file=sys.stderr)
+            import traceback
+            traceback.print_exc()
 
     result = []
 
